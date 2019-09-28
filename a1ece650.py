@@ -306,6 +306,9 @@ def exCord(Command):
     u = 0
     much = 0
     listt = []
+    gg= 0
+    num = 0
+    values =[]
     while itr<h:
         if(Cord[itr] not in ["(",")",","," "]):
             much = much+1
@@ -316,13 +319,23 @@ def exCord(Command):
                 elif(Cord[itr] not in ["(",")",","]):
                     listt.append(Cord[itr])
                     itr = itr+1
-            s = [str(i) for i in listt]
-            res = int("".join(s))
-            cart[much] = res
-            listt = []
+
+            num = checknumbers(str(listt))  
+            if num==1:
+                s = [str(i) for i in listt]
+                res = int("".join(s))
+                cart[much] = res
+                listt = []
+            else:
+                return ""
         else:
             itr = itr + 1
-    return cart
+            
+    if(len(cart)%2==0):
+        return cart
+    else:
+        print "one coordinate missing"
+        return ""
 
 def ErrorCheck(Command):
     output = 0
@@ -424,7 +437,7 @@ def ErrorCheck(Command):
             return output
 
         if(flag_Input == 0):
-            print "Error: Invalid 123 Input"
+            print "Error: Invalid Input"
             output = 1
             return output
             
@@ -437,8 +450,8 @@ def ErrorCheck(Command):
                 return output  
             elif(Command[i] == '"'):
                 break
-                
-        
+              
+        #areeb = 0
         for i in range(len(Command)):    
             if(Command[i]=='"' and flag_CheckLetters==0):
                 i = i+1
@@ -446,9 +459,23 @@ def ErrorCheck(Command):
                     onlyletters += Command[i]
                     i = i+1
                 flag_CheckLetters = 1
-                break
+                break                        
         
         validin = 0
+        if len(onlyletters) == 0:# or " " in onlyletters:
+            print "Error: No Street Name Specified"
+            output = 1
+            return output
+            
+        if all(x.isalpha() for x in onlyletters):
+            #Valid Street Name
+            validin = 1
+            
+        else:
+            print("Error: Street name should only have alphabets ")
+            error = 1
+            output = 1
+            return output
             
         if all(x.isalpha() or x.isspace() for x in onlyletters):
             #Valid Street Name
@@ -578,6 +605,20 @@ def run(string):
     else: 
         print("Error:Input not accepted as it contains invlaid characters or brackets.") 
         return 1
+def checknumbers(string):
+    if re.search(r"[a-z]", string) == None:
+        return 1
+    else:
+        print "Error: Invalid Coordinates"
+        return 0
+##    if regex.search(string) == None:
+##        print "Valid coordinates"
+##        return 1
+##    else:
+##        print "Error:Invalid coordinates."
+##        return 0
+         
+    
     
 while True:
     V={}
@@ -593,8 +634,9 @@ while True:
     gPress = 0
     Edges_List = []
     inputResult = 0
+    errorr = 0
     while True:
-   
+       
         Command = raw_input("Enter Input ")
         inputResult = run(Command)
         if(inputResult == 1):
@@ -606,11 +648,15 @@ while True:
         elif(Error_Result ==0):
             if(Command[0] == 'a'):
                 cart1= exCord(Command)
+                if (len(cart1) == 0):
+                    continue
                 TotalStreets,StreetList = addStreet(cart1,TotalStreets,Command,StreetList)
                 gPress = 0
                 
             elif(Command[0] == 'c'):
                 cart1= exCord(Command)
+                if (len(cart1) == 0):
+                    continue
                 TotalStreets,StreetList = changeStreet(cart1,TotalStreets,Command,StreetList)
                 gPress = 0
                 
