@@ -34,13 +34,22 @@ class line():
     def equation(self):
         self.y = self.y2 - (self.gradient()*self.x2)
         return self.y
+    def print_line(self):
+        print(self.x1,",",self.y1, "->",self.x2,",",self.y2)
+        
 def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
     
     
     if(custom_line1.x1==custom_line2.x1 and custom_line1.x2==custom_line2.x2 and custom_line1.y1==custom_line2.y1 and custom_line1.y2==custom_line2.y2) :
+        if((custom_line1.x1,custom_line1.y1) not in Intersection_Vertex.values()):
+            Intersection_Vertex[len(Intersection_Vertex)] = custom_line1.x1,custom_line1.y1
         if((custom_line1.x1,custom_line1.y1) not in V.values()):
             V[len(V)+1] = (custom_line1.x1,custom_line1.y1)
-            return V,Intersection_Vertex
+        if((custom_line1.x2,custom_line1.y2) not in V.values()):
+            V[len(V)+1] = (custom_line1.x2,custom_line1.y2)
+        return V,Intersection_Vertex
+
+        
     x_max_Line_1 = max(custom_line1.x1,custom_line1.x2)
     x_max_Line_2 = max(custom_line2.x1,custom_line2.x2)
     y_max_Line_1 = max(custom_line1.y1,custom_line1.y2)
@@ -76,12 +85,39 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
         L2y = custom_line2.y1
         L2m = custom_line2.gradient()
         L2y1= custom_line2.equation()
+        cht = -1
+        flag_IV = 0
         if(L2m==L1m):
-            return V,Intersection_Vertex
-        xInt=(L1y1-L2y1)/(L2m-L1m)
-        yInt = L1m*xInt + L1y1
-        yTest = L2m*xInt + L2y1
-        if(yInt==yTest and yInt>=y_min_Line_1 and yInt<= y_max_Line_1 and xInt >=x_min_Line_1 and xInt<=x_max_Line_1 and yInt>=y_min_Line_2 and yInt<= y_max_Line_2 and xInt >= x_min_Line_2 and xInt <= x_max_Line_2):
+            if (L1y1 != L2y1):
+                return V,Intersection_Vertex
+            else:
+                #Same gradient and partial overlapp
+                global_x = sorted([custom_line1.x1, custom_line1.x2, custom_line2.x1, custom_line2.x2])
+                global_y = sorted([custom_line1.y1, custom_line1.y2, custom_line2.y1, custom_line2.y2])
+                int_vert = -1
+                for i in range(0,len(global_x)):  
+                    if (global_x[i] >= min(custom_line1.x1,custom_line1.x2) and global_x[i] <= max(custom_line1.x1,custom_line1.x2) and global_x[i] >= min(custom_line2.x1,custom_line2.x2) and global_x[i] <= max(custom_line2.x1,custom_line2.x2)):
+                        if(global_y[i] >= min(custom_line1.y1,custom_line1.y2) and global_y[i] <= max(custom_line1.y1,custom_line1.y2) and global_y[i] >= min(custom_line2.y1,custom_line2.y2) and global_y[i] <= max(custom_line2.y1,custom_line2.y2)):
+                           int_vert= i
+                           cht  = i
+                           if((global_x[i],global_y[i]) not in Intersection_Vertex.values() and flag_IV == 0):
+                               flag_IV = 1
+                               Intersection_Vertex[len(Intersection_Vertex)] = global_x[i],global_y[i]
+                    
+                if((global_x[cht],global_y[cht]) not in Intersection_Vertex.values()):
+                    Intersection_Vertex[len(Intersection_Vertex)] = global_x[cht],global_y[cht]
+                if(int_vert>-1):
+                    for i in range(0,len(global_x)):
+                        if((global_x[i],global_y[i]) not in V.values()):
+                            V[len(V)+1] = global_x[i],global_y[i]
+                return V,Intersection_Vertex
+        
+        xInt=float((L1y1-L2y1)/(L2m-L1m))
+        yInt = float(L1m*xInt + L1y1)
+        yTest = float(L2m*xInt + L2y1)
+    
+        
+        if((yInt>y_min_Line_1) and (yInt<y_max_Line_1) and (xInt >x_min_Line_1) and (xInt<x_max_Line_1) and (yInt>y_min_Line_2) and (yInt<y_max_Line_2) and (xInt > x_min_Line_2) and (xInt < x_max_Line_2)):
             V,Intersection_Vertex = Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex) 
     return V,Intersection_Vertex
 
@@ -89,7 +125,11 @@ def same_street(V,I_V,TotalStreets,StreetList):
     Vlist = V.values()
     I_Vlist = I_V.values()
     edges =[]
-    
+    yes_edge = 0
+    vertix_st_dict = {}
+    street_V = []
+    street_V =V.values()
+
     ks = 0
     for key in I_V:
         ks = key
@@ -97,80 +137,116 @@ def same_street(V,I_V,TotalStreets,StreetList):
             yes_edge = 0
             if(V[key]!=I_V[ks]):
                 for i in range(len(StreetList)):
+                    flag_iv = False
+                    flag_v = False
+                    lab_v = []
+                    v_seg = -1
+                    int_seg = -1
+                    k_Num = []
+                    flag_Check = -2
+                   
+                    
                     for k in range(len(TotalStreets[StreetList[i]])):
                         outputt = 0
+                        k_set = []
+                        for m in range(0,len(street_V)):
+                            if(vertix_check(street_V[m],TotalStreets[StreetList[i]][k])):
+                                
+                                    if(len(lab_v)==0):
+                                       k_set.append(tuple(list(street_V[m])))
+                                    else:
+                                        for ko in range(0,len(lab_v)):
+
+                                            if((street_V[m]) not in lab_v):
+                                                flag_Check=0
+                                                
+                                            else:
+                                                flag_Check=1
+                                                
+                                                break
+                                        if(flag_Check == 0):
+                                            k_set.append(tuple(list(street_V[m])))
+                                        if(flag_Check == 1):
+                                            continue
+                        distance = {}
+                        updated_k_set = []
+                        for L in range(0,len(k_set)):
+                            x1 = TotalStreets[StreetList[i]][k].x1
+                            y1 = TotalStreets[StreetList[i]][k].y1
+                            dist_from_x_Start = (k_set[L][0]-x1)**2 + (k_set[L][1]-y1)**2
+                            distance[L] = dist_from_x_Start
+                        distance = sorted(distance.iteritems(), key = lambda po : po[1])
                         
-                        outputt = Vertix_Check(V[key],I_V[ks],TotalStreets[StreetList[i]][k])
-                        if(outputt == 1):
-                            break
-                    if(outputt == 1):
-                        yes_edge = No_Vertix_Between( V[key], I_V[ks],StreetList[i],V)
-                        
-            if(yes_edge == 1):
-                if((ks,key) not in edges and (key,ks) not in edges):
-                    edges.append((ks,key))
-               
+                        for L in range(0,len(distance)):
+                            updated_k_set.append(k_set[distance[L][0]])
+                       
+                        for kl in range(0,len(updated_k_set)):
+                            lab_v.append(updated_k_set[kl])
+                                
+                        if(vertix_check(I_V[ks],TotalStreets[StreetList[i]][k])):
+                            flag_iv = True
+                            int_seg = k
+                            
+                        if(vertix_check(V[key],TotalStreets[StreetList[i]][k])):
+                            flag_v = True
+                            v_seg = k
+       
+                    if(flag_iv == True and flag_v == True):
+                        yes_edge = No_Vertix_Between( V[key],I_V[ks],lab_v)
+                    if(yes_edge == 1):
+                        if((ks,key) not in edges and (key,ks) not in edges):
+                            edges.append((ks,key))
+                       
     return edges
              
-def No_Vertix_Between(V1,IV1,StreetName,V):
-    edgee = 0
-    ytest = 0
-    xtest = 0
-    line_Check = line(IV1[0],IV1[1],V1[0],V1[1])
-    x_max = max([V1[0],IV1[0]])
-    x_min = min([V1[0],IV1[0]])
-    y_max = max([V1[1],IV1[1]])
-    y_min = min([V1[1],IV1[1]])
-
-    if(IV1[0]==V1[0]):
-        for key in V:
-            xtest = (V[key][0])
-            ytest = (V[key][1])
-            if(xtest == IV1[0] and ytest>=y_min and ytest<=y_max):
-                if(V[key] not in [V1,IV1]):
-                    return edgee
+def No_Vertix_Between(V1,IV1,lab_v):
+    V1_Index = -1
+    IV1_Index= -1
+    for i in range(0,len(lab_v)):
+        if(lab_v[i]==V1):
+            V1_Index = i
+        elif(lab_v[i]==IV1):
+            IV1_Index= i
+    if(V1_Index-IV1_Index==1 or V1_Index-IV1_Index == -1):
+        return 1
     else:
-        m = line_Check.gradient()
-        yc = line_Check.equation()
-        for key in V:
-            xtest = (V[key][0])
-            ytest = (V[key][1])
-            if(xtest>=x_min and xtest<=x_max and ytest>=y_min and ytest<=y_max):
-                if(V[key] not in [V1,IV1]):
-                    y = m*xtest+yc
-                    if(y==ytest):
-                        return edgee
+        return 0
+            
 
-    edgee = 1
-    return edgee
-                  
-def Vertix_Check(v1,v2,custom_line1):
-    Vx = v1[0]
-    Vy = v1[1]
-    IVx = v2[0]
-    IVy = v2[1]
-    result = 0
-    
+
+def vertix_check(v,custom_line1):
     x_max = max(custom_line1.x1,custom_line1.x2)
     x_min = min(custom_line1.x1,custom_line1.x2)
     y_max = max(custom_line1.y1,custom_line1.y2)
     y_min = min(custom_line1.y1,custom_line1.y2)
+    Vx = 0
+    Vy = 0
+    Vx = v[0]
+    Vy = v[1]
+    result = 0
+    vtest = 0
 
-    
     if(custom_line1.x1 == custom_line1.x2):
-        if(Vx==custom_line1.x1 and IVx==custom_line1.x1 and Vy>=custom_line1.y1 and Vy<=custom_line1.y2 and IVy>=custom_line1.y1 and IVy<=custom_line1.y2):
+        if(Vx==custom_line1.x1  and Vy>=y_min and Vy<=y_max):
             result = 1
-            #print "Vertices = ",v1,v2,"Are on same street"
             return result
-    elif(Vx>=x_min and Vx<=x_max and Vy>=y_min and Vy<=y_max and IVx>= x_min and IVx<=x_max and IVy>=y_min and IVy<y_max):
+    elif(Vx>=x_min and Vx<=x_max and Vy>=y_min and Vy<=y_max):
         m = custom_line1.gradient()
         yc = custom_line1.equation()
-        if(Vy == (m*Vx + yc) and IVy == (m*IVx + yc)):
-            #print "Vertices = ",v1,v2,"Are on same street"
+        Vy = float(Vy)
+        Vx = float(Vx)
+        m = float(m)
+        yc = float(yc)
+        vtest = float((m*Vx + yc))
+        vtest = round(vtest,2)
+        Vy = round(Vy,2)
+        if(float(Vy) == float(vtest)):
             result = 1
             return result
     else:
         return result
+              
+                  
               
 def addStreet(cart,TotalStreets,Command,StreetNames):
     Streets=[]
@@ -244,21 +320,19 @@ def changeStreet(cart,TotalStreets,Command,StreetNames):
         TotalStreets.update({streetlist:Streets})
         return TotalStreets,StreetNames
 
-
 def Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex):
-    
-    xIntt = round(xInt,2)
-    yIntt = round(yInt,2)
-    x_1_1 = round(custom_line1.x1,2)
-    x_2_1 = round(custom_line1.x2,2)
-    x_1_2 = round(custom_line2.x1,2)
-    x_2_2 = round(custom_line2.x2,2)
-    y_1_1=  round(custom_line1.y1,2)
-    y_2_1=  round(custom_line1.y2,2)
-    y_1_2 = round(custom_line2.y1,2)
-    y_2_2 = round(custom_line2.y2,2)
 
-       
+    xIntt = (xInt)
+    yIntt = (yInt)
+    x_1_1 = (custom_line1.x1)
+    x_2_1 = (custom_line1.x2)
+    x_1_2 = (custom_line2.x1)
+    x_2_2 = (custom_line2.x2)
+    y_1_1=  (custom_line1.y1)
+    y_2_1=  (custom_line1.y2)
+    y_1_2 = (custom_line2.y1)
+    y_2_2 = custom_line2.y2
+    
     if((xIntt,yIntt) not in Intersection_Vertex.values()):
         Intersection_Vertex[len(Intersection_Vertex)] = xIntt,yIntt
     
@@ -334,7 +408,7 @@ def exCord(Command):
     if(len(cart)%2==0):
         return cart
     else:
-        print "one coordinate missing"
+        print "Error: One coordinate missing"
         return ""
 
 def ErrorCheck(Command):
@@ -369,7 +443,7 @@ def ErrorCheck(Command):
         return output
     if(Command[0]!='g'):
         if(Command[0] not in ['a','c','r','g']):
-            print "Error: Invalid input command at Start "
+            print "Error: Invalid input command "
             output = 1
             return output
         if(Command[1] != ' '):
@@ -394,7 +468,7 @@ def ErrorCheck(Command):
                            break      
                        
                        if(Command[len(Command)-1] not in  [')',' ']):
-                           print "Error: Valid Brackets Missing for Coordinates so Invalid Input"
+                           print "Error: Invalid input format"
                            error = 1
                            output = 1
                            return output
@@ -421,7 +495,7 @@ def ErrorCheck(Command):
                                  k = k+1
                                  break
                              else:
-                                 print"Error: Invalid Bracket/Input "
+                                 print"Error: Invalid Input format"
                                  br = 1
                                  output = 1
                                  return output
@@ -432,12 +506,12 @@ def ErrorCheck(Command):
             output = 1
             return output
         if(br == 1):
-            print "Error:Invalid Brackets"
+            print "Error:Invalid input format"
             output = 1
             return output
 
         if(flag_Input == 0):
-            print "Error: Invalid Input"
+            print "Error: Invalid Input format"
             output = 1
             return output
             
@@ -450,8 +524,6 @@ def ErrorCheck(Command):
                 return output  
             elif(Command[i] == '"'):
                 break
-              
-        #areeb = 0
         for i in range(len(Command)):    
             if(Command[i]=='"' and flag_CheckLetters==0):
                 i = i+1
@@ -462,23 +534,12 @@ def ErrorCheck(Command):
                 break                        
         
         validin = 0
-        if len(onlyletters) == 0:# or " " in onlyletters:
+        if len(onlyletters) == 0:
             print "Error: No Street Name Specified"
             output = 1
             return output
-            
-        if all(x.isalpha() for x in onlyletters):
-            #Valid Street Name
-            validin = 1
-            
-        else:
-            print("Error: Street name should only have alphabets ")
-            error = 1
-            output = 1
-            return output
-            
+        
         if all(x.isalpha() or x.isspace() for x in onlyletters):
-            #Valid Street Name
             validin = 1
             
         else:
@@ -491,7 +552,7 @@ def ErrorCheck(Command):
     for i in range(len(Command)):
         if(Command[i] in ['(',')']):
             if(Command[i] == ')' and flag_brac_check== 0):
-                print "Error: Invalid Bracket Start"
+                print "Error: Invalid input format"
                 check = 1
                 output = 1
                 return output
@@ -501,17 +562,15 @@ def ErrorCheck(Command):
             elif(Command[i]==')' and checkbrac == 1):
                  checkbrac = 0
             else:
-                print "Error: Bracket/Brackets Missing "
+                print "Error: Invalid input format "
                 output = 1
                 check = 1
                 return output
                
     if(check==1 or checkbrac==1):
-        #print "Error: Invalid Brackets"
         output = 1
         return output
     if(error == 1):
-        #print "Error: Invalid Input"
         output = 1
         return output
     
@@ -578,6 +637,8 @@ def removeStreet(TotalStreets,Command,StreetNames):
         del TotalStreets[streetlist]
         return TotalStreets,StreetNames
 def showEdge(EdgeList):
+   
+        
     if(len(EdgeList)<1):
         print "E = { }"
     else:
@@ -587,13 +648,22 @@ def showEdge(EdgeList):
         print"}"
 
 def showDic(new_V):
+    dictionary_Vertix = {}
+    dictionary_Vertix = dict(new_V)
+    
+    for key in dictionary_Vertix :
+        x1 = dictionary_Vertix [key][0]
+        y1 = dictionary_Vertix [key][1]
+        x1 = round(x1,2)
+        y1 = round(y1,2)
+        dictionary_Vertix [key] = x1,y1
  
-    if(len(new_V)<1):
+    if(len(dictionary_Vertix )<1):
         print "V = { }"
     else:
         print "V = { "
-        for key in sorted(new_V):
-            print key, ":",new_V[key]
+        for key in sorted(dictionary_Vertix) :
+            print key, ":",dictionary_Vertix [key]
         print"}"
 
 def run(string):  
@@ -611,13 +681,6 @@ def checknumbers(string):
     else:
         print "Error: Invalid Coordinates"
         return 0
-##    if regex.search(string) == None:
-##        print "Valid coordinates"
-##        return 1
-##    else:
-##        print "Error:Invalid coordinates."
-##        return 0
-         
     
     
 while True:
@@ -637,12 +700,11 @@ while True:
     errorr = 0
     while True:
        
-        Command = raw_input("Enter Input ")
+        Command = raw_input("")
         inputResult = run(Command)
         if(inputResult == 1):
             continue
         Error_Result = ErrorCheck(Command)
-        #print "Error Result is ", Error_Result
         if(Error_Result ==1):
             continue
         elif(Error_Result ==0):
@@ -695,8 +757,7 @@ while True:
                     showDic(new_V)
                     showEdge(Edges_List)
                     gPress = 1
-                      
-                #print"V_Previous is ", V_Previous
+                    
                 V_Previous = new_V
 
         '''
