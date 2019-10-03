@@ -18,7 +18,6 @@ def main():
     # return exit code 0 on successful termination
     sys.exit(0)
 '''
-
 class line():
     
     def __init__(self,a,b,c,d):
@@ -39,7 +38,6 @@ class line():
         
 def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
     
-    
     if(custom_line1.x1==custom_line2.x1 and custom_line1.x2==custom_line2.x2 and custom_line1.y1==custom_line2.y1 and custom_line1.y2==custom_line2.y2) :
         if((custom_line1.x1,custom_line1.y1) not in Intersection_Vertex.values()):
             Intersection_Vertex[len(Intersection_Vertex)] = custom_line1.x1,custom_line1.y1
@@ -48,8 +46,7 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
         if((custom_line1.x2,custom_line1.y2) not in V.values()):
             V[len(V)+1] = (custom_line1.x2,custom_line1.y2)
         return V,Intersection_Vertex
-
-        
+  
     x_max_Line_1 = max(custom_line1.x1,custom_line1.x2)
     x_max_Line_2 = max(custom_line2.x1,custom_line2.x2)
     y_max_Line_1 = max(custom_line1.y1,custom_line1.y2)
@@ -115,7 +112,6 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
         xInt=float((L1y1-L2y1)/(L2m-L1m))
         yInt = float(L1m*xInt + L1y1)
         yTest = float(L2m*xInt + L2y1)
-    
         
         if((yInt>y_min_Line_1) and (yInt<y_max_Line_1) and (xInt >x_min_Line_1) and (xInt<x_max_Line_1) and (yInt>y_min_Line_2) and (yInt<y_max_Line_2) and (xInt > x_min_Line_2) and (xInt < x_max_Line_2)):
             V,Intersection_Vertex = Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex) 
@@ -129,7 +125,6 @@ def same_street(V,I_V,TotalStreets,StreetList):
     vertix_st_dict = {}
     street_V = []
     street_V =V.values()
-
     ks = 0
     for key in I_V:
         ks = key
@@ -145,7 +140,6 @@ def same_street(V,I_V,TotalStreets,StreetList):
                     k_Num = []
                     flag_Check = -2
                    
-                    
                     for k in range(len(TotalStreets[StreetList[i]])):
                         outputt = 0
                         k_set = []
@@ -211,8 +205,6 @@ def No_Vertix_Between(V1,IV1,lab_v):
         return 1
     else:
         return 0
-            
-
 
 def vertix_check(v,custom_line1):
     x_max = max(custom_line1.x1,custom_line1.x2)
@@ -245,9 +237,7 @@ def vertix_check(v,custom_line1):
             return result
     else:
         return result
-              
-                  
-              
+                               
 def addStreet(cart,TotalStreets,Command,StreetNames):
     Streets=[]
     i = 1
@@ -283,7 +273,6 @@ def addStreet(cart,TotalStreets,Command,StreetNames):
         StreetNames.append(streetlist)
         TotalStreets.update({streetlist:Streets})
         return TotalStreets,StreetNames
-
 
 def changeStreet(cart,TotalStreets,Command,StreetNames):
     Streets=[]
@@ -321,7 +310,6 @@ def changeStreet(cart,TotalStreets,Command,StreetNames):
         return TotalStreets,StreetNames
 
 def Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex):
-
     xIntt = (xInt)
     yIntt = (yInt)
     x_1_1 = (custom_line1.x1)
@@ -410,7 +398,7 @@ def exCord(Command):
     else:
         print "Error: One coordinate missing"
         return ""
-
+    
 def ErrorCheck(Command):
     output = 0
     k = 0
@@ -473,8 +461,7 @@ def ErrorCheck(Command):
                            output = 1
                            return output
                            break
-                          
-                       
+                         
                        if(i==len(Command)-1 ):
                            print "Error: No coordinates given"
                            error = 1
@@ -546,8 +533,7 @@ def ErrorCheck(Command):
             print("Error: Street name should only have alphabets ")
             error = 1
             output = 1
-            return output
-            
+            return output 
             
     for i in range(len(Command)):
         if(Command[i] in ['(',')']):
@@ -627,7 +613,7 @@ def removeStreet(TotalStreets,Command,StreetNames):
                     break
         if (flag2== 1):
             break
-        
+       
     streetlist = streetlist.upper()
     if(streetlist not in StreetNames):
         print"Error: The street you want to remove doesn't exist on our database."
@@ -636,42 +622,41 @@ def removeStreet(TotalStreets,Command,StreetNames):
         StreetNames.remove(streetlist)
         del TotalStreets[streetlist]
         return TotalStreets,StreetNames
-def showEdge(EdgeList):
-   
-        
+def showEdge(EdgeList):  
     if(len(EdgeList)<1):
-        print "E = { }"
+        print "E = {\n}"
     else:
         print "E = { "
         for i in range(len(EdgeList)):
-            print "<" ,EdgeList[i][0],",",EdgeList[i][1], ">"
+            if(i<len(EdgeList)-1):
+               print" <"+str(EdgeList[i][0])+","+str(EdgeList[i][1])+">,"
+            else:
+               print" <"+str(EdgeList[i][0])+","+str(EdgeList[i][1])+">"
+               
         print"}"
-
+        
 def showDic(new_V):
     dictionary_Vertix = {}
     dictionary_Vertix = dict(new_V)
-    
     for key in dictionary_Vertix :
         x1 = dictionary_Vertix [key][0]
         y1 = dictionary_Vertix [key][1]
         x1 = round(x1,2)
         y1 = round(y1,2)
         dictionary_Vertix [key] = x1,y1
- 
     if(len(dictionary_Vertix )<1):
-        print "V = { }"
+        print "V = {\n}"
     else:
         print "V = { "
         for key in sorted(dictionary_Vertix) :
-            print key, ":",dictionary_Vertix [key]
+            print " "+str(key)+":"+" "+"("+str(dictionary_Vertix[key][0])+","+str(dictionary_Vertix[key][1])+")"
         print"}"
 
 def run(string):  
     regex = re.compile('[@_!#$%^&*<>?/\|}{~:]') 
           
     if(regex.search(string) == None): 
-        return 0
-          
+        return 0  
     else: 
         print("Error:Input not accepted as it contains invlaid characters or brackets.") 
         return 1
@@ -681,7 +666,6 @@ def checknumbers(string):
     else:
         print "Error: Invalid Coordinates"
         return 0
-    
     
 while True:
     V={}
@@ -699,7 +683,6 @@ while True:
     inputResult = 0
     errorr = 0
     while True:
-       
         Command = raw_input("")
         inputResult = run(Command)
         if(inputResult == 1):
@@ -727,7 +710,6 @@ while True:
                 gPress = 0
                        
             elif(Command[0]=='g'):
-                
                 if(gPress == 0):
                     gPress = 1
                     V={}
@@ -759,8 +741,4 @@ while True:
                     gPress = 1
                     
                 V_Previous = new_V
-
-        '''
-        if __name__ == '__main__':
-            main()
-        '''
+                
