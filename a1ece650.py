@@ -33,11 +33,9 @@ class line():
     def equation(self):
         self.y = self.y2 - (self.gradient()*self.x2)
         return self.y
-    def print_line(self):
-        print(self.x1,",",self.y1, "->",self.x2,",",self.y2)
-        
-def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
     
+def intersection(custom_line1,custom_line2,V,Intersection_Vertex,w):
+    w = 0
     if(custom_line1.x1==custom_line2.x1 and custom_line1.x2==custom_line2.x2 and custom_line1.y1==custom_line2.y1 and custom_line1.y2==custom_line2.y2) :
         if((custom_line1.x1,custom_line1.y1) not in Intersection_Vertex.values()):
             Intersection_Vertex[len(Intersection_Vertex)] = custom_line1.x1,custom_line1.y1
@@ -45,7 +43,7 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
             V[len(V)+1] = (custom_line1.x1,custom_line1.y1)
         if((custom_line1.x2,custom_line1.y2) not in V.values()):
             V[len(V)+1] = (custom_line1.x2,custom_line1.y2)
-        return V,Intersection_Vertex
+        return V,Intersection_Vertex,w
   
     x_max_Line_1 = max(custom_line1.x1,custom_line1.x2)
     x_max_Line_2 = max(custom_line2.x1,custom_line2.x2)
@@ -71,7 +69,7 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
             yInt = L1m*xInt +L1y1
             if(yInt>= y_min_Line_2 and yInt <= y_max_Line_2 and yInt >= y_min_Line_1 and yInt <= y_max_Line_1):
                 V,Intersection_Vertex = Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex)
-        return V,Intersection_Vertex
+        return V,Intersection_Vertex,w
     else:
     
         L1x = custom_line1.x1
@@ -86,7 +84,7 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
         flag_IV = 0
         if(L2m==L1m):
             if (L1y1 != L2y1):
-                return V,Intersection_Vertex
+                return V,Intersection_Vertex,w
             else:
                 #Same gradient and partial overlapp
                 global_x = sorted([custom_line1.x1, custom_line1.x2, custom_line2.x1, custom_line2.x2])
@@ -107,7 +105,9 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
                     for i in range(0,len(global_x)):
                         if((global_x[i],global_y[i]) not in V.values()):
                             V[len(V)+1] = global_x[i],global_y[i]
-                return V,Intersection_Vertex
+                if(((custom_line1.x1-custom_line1.x2)**2 + (custom_line1.y1-custom_line1.y2)**2) < ((custom_line2.x1-custom_line2.x2)**2 + (custom_line2.y1-custom_line2.y2)**2)):
+                    w=1
+                return V,Intersection_Vertex,w
         
         xInt=float((L1y1-L2y1)/(L2m-L1m))
         yInt = float(L1m*xInt + L1y1)
@@ -115,7 +115,7 @@ def intersection(custom_line1,custom_line2,V,Intersection_Vertex):
         
         if((yInt>y_min_Line_1) and (yInt<y_max_Line_1) and (xInt >x_min_Line_1) and (xInt<x_max_Line_1) and (yInt>y_min_Line_2) and (yInt<y_max_Line_2) and (xInt > x_min_Line_2) and (xInt < x_max_Line_2)):
             V,Intersection_Vertex = Vertex(xInt,yInt,custom_line1,custom_line2,V,Intersection_Vertex) 
-    return V,Intersection_Vertex
+    return V,Intersection_Vertex,w
 
 def same_street(V,I_V,TotalStreets,StreetList):
     Vlist = V.values()
@@ -682,6 +682,7 @@ while True:
     Edges_List = []
     inputResult = 0
     errorr = 0
+    line_Overlap = 0
     while True:
         Command = raw_input("")
         inputResult = run(Command)
@@ -719,7 +720,13 @@ while True:
                         while (tr<len(StreetList)-1):
                             for k in range(len(TotalStreets[StreetList[i]])):
                                 for l in range(len(TotalStreets[StreetList[tr+1]])):
-                                    V,Intersection_Vertex = intersection(TotalStreets[StreetList[i]][k],TotalStreets[StreetList[tr+1]][l],V,Intersection_Vertex)
+                                    V,Intersection_Vertex,line_Overlap = intersection(TotalStreets[StreetList[i]][k],TotalStreets[StreetList[tr+1]][l],V,Intersection_Vertex,line_Overlap)
+                                    if(line_Overlap==1 and k-1>-1 and k+1<len(TotalStreets[StreetList[i]])):
+                                        if((TotalStreets[StreetList[i]][k-1].x1,TotalStreets[StreetList[i]][k-1].y1) not in V.values()):
+                                            V[len(V)+1] = TotalStreets[StreetList[i]][k-1].x1,TotalStreets[StreetList[i]][k-1].y1
+                                        if((TotalStreets[StreetList[i]][k+1].x2,TotalStreets[StreetList[i]][k+1].y2) not in V.values()):
+                                            V[len(V)+1] = TotalStreets[StreetList[i]][k+1].x2,TotalStreets[StreetList[i]][k+1].y2
+                                        
                             tr = tr + 1
                     if(new_Flag == 0):
                         new_V = V
